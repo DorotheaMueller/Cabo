@@ -6,6 +6,8 @@ import sys
 import main
 
 # Create a board and check if the amount of cards is what we expect.
+
+
 def test_board_card_count():
     board = Board(4)
     count = len(board.pile.draw_pile) + len(board.pile.discard_pile)
@@ -15,10 +17,13 @@ def test_board_card_count():
 
 # Run a full example game with AIs
 # Throwing no exceptions passes the test.
+
+
 def test_full_example_run():
     testargs = [sys.argv[0], "Doro", "Rolf", "Judita"]
     with patch.object(sys, 'argv', testargs):
         full_example_run()
+
 
 def full_example_run():
     game = main.Game()

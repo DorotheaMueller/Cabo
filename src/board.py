@@ -7,6 +7,8 @@ import message
 """A Hand class which represents the true cards each player holds.
 If a ._cardX is None, then the place is empty (by multiple-replace).
 To indicate it holds a card this stores an integer."""
+
+
 class Hand(object):
     def __init__(self, pile):
         self._card0 = pile.draw()
@@ -52,6 +54,7 @@ class HandCallback(object):
     def __init__(self, hand, max_peeks):
         self.hand = hand
         self.peeks_left = max_peeks
+
     def peek(self, index):
         if self.peeks_left <= 0:
             raise RuntimeError("You don't have any peeks left.")
@@ -64,7 +67,7 @@ class HandCallback(object):
 
 class Pile(object):
     def __init__(self):
-        self.draw_pile = [0,13] * 2 + list(range(1,13)) * 4
+        self.draw_pile = [0, 13] * 2 + list(range(1, 13)) * 4
         random.shuffle(self.draw_pile)
 
         self.discard_pile = []
@@ -108,6 +111,7 @@ class Board(object):
     Hands: {self.hands}
     {self.pile}"""
 
+
 class BoardCallback(object):
     def __init__(self, board, active_player):
         self._board = board
@@ -142,13 +146,14 @@ class BoardCallback(object):
         assert(self.hand_card is not None)
         assert(not self.turn_over)
         old_card = self._board.hands[self.active_player][index]
-        assert(old_card is not None) # You can't replace cards you don't have.
+        assert(old_card is not None)  # You can't replace cards you don't have.
         self._board.pile.discard(old_card)
         self._board.hands[self.active_player][index] = self.hand_card
 
         # If the card was drawn from the discard pile, then this is
         # public information.
-        replace_info = message.ReplaceInfo(not self.drawn_from_deck, self.active_player, index, self.hand_card)
+        replace_info = message.ReplaceInfo(
+            not self.drawn_from_deck, self.active_player, index, self.hand_card)
         self.information.append(replace_info)
 
         self.hand_card = None

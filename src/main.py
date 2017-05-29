@@ -3,6 +3,7 @@
 import board
 import sys
 
+
 class Game(object):
     def __init__(self):
         # Read player names from command line arguments
@@ -12,7 +13,8 @@ class Game(object):
         for i in range(1, len(sys.argv)):
             self.player_names.append(sys.argv[i])
 
-        self.players = [Player(self.player_names[i], i, self.player_count) for i in range(self.player_count)]
+        self.players = [Player(self.player_names[i], i, self.player_count)
+                        for i in range(self.player_count)]
 
         self.setup_subgame()
 
@@ -24,7 +26,7 @@ class Game(object):
             player.new_game()
             player.pregame_peek(self.board.hands[i].callback(2))
 
-    def run_subgame(self, active_player = 0):
+    def run_subgame(self, active_player=0):
         self.active_player = active_player
 
         self.run_turn()
@@ -54,7 +56,9 @@ class Unknown(object):
     def __repr__(self):
         return "?"
 
+
 unknown = Unknown()
+
 
 class Player(object):
     def __init__(self, name, index, player_count):
@@ -87,7 +91,7 @@ class Player(object):
         #   - Check if a particular card would create a pair.
         #   - Track the discard pile over a reshuffle (maybe elsewhere).
         #   - Get (guarded) access to other players knowledge. (via BoardCallback)
-        #   - 
+        #   -
 
 
 def main():
