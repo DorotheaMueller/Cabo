@@ -2,7 +2,11 @@
 
 import board
 import sys
+import random
 
+class FurtherKnowledge(object):
+    def __init__(self):
+        self.called_cabo = None
 
 class Game(object):
     def __init__(self):
@@ -15,8 +19,15 @@ class Game(object):
 
         self.players = [Player(self.player_names[i], i, self.player_count)
                         for i in range(self.player_count)]
+        self.total_scores = [0] * self.player_count
 
         self.setup_subgame()
+
+    def run_game(self):
+        self.run_subgame()
+        while max(self.total_scores) < 100:
+            self.setup_subgame()
+            self.run_subgame()
 
     def setup_subgame(self):
         self.board = board.Board(self.player_count)
@@ -29,9 +40,29 @@ class Game(object):
     def run_subgame(self, active_player=0):
         self.active_player = active_player
 
-        self.run_turn()
-        self.run_turn()
-        self.run_turn()
+        while self.active_player != self.board.called_cabo:
+            self.run_turn()
+
+        self.score_game()
+
+    def score_game(self):
+        scores = [sum(hand) for hand in self.board.hands]
+        min_score = min(scores)
+        if scores[self.board.called_cabo] == min_score:
+            scores[self.board.called_cabo] = 0
+            # todo: sum scores over many games
+        else:
+            # Punish cabo player for their wrong guess
+            scores[self.board.called_cabo] += 5
+            for i in range(self.player_count):
+                score = scores[i]
+                if score == min_score:
+                    scores[i] = 0
+
+        for i in range(self.player_count):
+            self.total_scores[i] += scores[i]
+            if self.total_scores[i] == 100:
+                self.total_scores[i] = 50
 
     def run_turn(self):
         board_callback = board.BoardCallback(self.board, self.active_player)
@@ -49,6 +80,7 @@ class Game(object):
         return f"""Game object:
     Board: {self.board}
     Players: {self.players}
+    Scores: {self.total_scores}
     Active Player: {self.active_player}"""
 
 
@@ -68,6 +100,7 @@ class Player(object):
 
     def new_game(self):
         self.knowledge = [[unknown] * 4 for _ in range(self.player_count)]
+        self.further_knowledge = FurtherKnowledge()
 
     def pregame_peek(self, hand):
         self.knowledge[self.index][0] = hand.peek(0)
@@ -75,11 +108,15 @@ class Player(object):
 
     def turn(self, board):
         # Wow, so much AI, so much clever.
-        card = board.draw()
-        board.replace_at(2)
+
+        if random.random() < 0.15 and board.cabo_allowed():
+            board.call_cabo()
+        else:
+            card = board.draw()
+            board.replace_at(2)
 
     def update_knowledge(self, info):
-        info.apply(self.knowledge)
+        info.apply(self.knowledge, self.further_knowledge)
 
     def __repr__(self):
         return f"Player({self.name}, {self.index}, {self.knowledge})"
@@ -97,7 +134,7 @@ class Player(object):
 def main():
     game = Game()
     print(game)
-    game.run_subgame()
+    game.run_game()
     print(game)
 
 

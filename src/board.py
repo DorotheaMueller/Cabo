@@ -105,11 +105,13 @@ class Board(object):
         self.hands = []
         for _ in range(player_count):
             self.hands.append(Hand(self.pile))
+        self.called_cabo = None
 
     def __str__(self):
         return f"""Board Object:
     Hands: {self.hands}
-    {self.pile}"""
+    {self.pile}
+    Called Cabo: {self.called_cabo}"""
 
 
 class BoardCallback(object):
@@ -134,6 +136,21 @@ class BoardCallback(object):
             self.hand_card = self._board.pile.discard_draw()
 
         return self.hand_card
+
+    def call_cabo(self):
+        assert(self.hand_card is None)
+        assert(not self.turn_over)
+        assert(self._board.called_cabo is None)
+        self._board.called_cabo = self.active_player
+        cabo_info = message.CaboInfo(self.active_player)
+        self.information.append(cabo_info)
+        self.turn_over = True
+
+    def cabo_allowed(self):
+        if self._board.called_cabo is None:
+            return True
+        else:
+            return False
 
     def discard(self):
         assert(self.hand_card is not None)
