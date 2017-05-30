@@ -11,10 +11,10 @@ To indicate it holds a card this stores an integer."""
 
 class Hand(object):
     def __init__(self, pile):
-        self._card0 = pile.draw()
-        self._card1 = pile.draw()
-        self._card2 = pile.draw()
-        self._card3 = pile.draw()
+        self._card0, _ = pile.draw()
+        self._card1, _ = pile.draw()
+        self._card2, _ = pile.draw()
+        self._card3, _ = pile.draw()
 
     def callback(self, max_peeks):
         return HandCallback(self, max_peeks)
@@ -72,16 +72,23 @@ class Pile(object):
 
         self.discard_pile = []
 
-        self.discard(self.draw())
+        self.discard(self.draw()[0])
 
         # TODO: Add size information functions
         # TODO: Somewhere save information over a reshuffle.
         # TODO: Count swaps in discard (and all other specials)
         #       Maybe have one counter per card.
 
+
     def draw(self):
-        # FIXME: Handle empty pile.
-        return self.draw_pile.pop()
+        # Returns tuple: First the drawn card, then whether the pile has been shuffled.
+        try:
+            return (self.draw_pile.pop(), False)
+        except IndexError:
+            random.shuffle(self.discard_pile)
+            self.draw_pile = self.discard_pile
+            self.discard_pile = []
+            return (self.draw_pile.pop(), True)
 
     def discard(self, card):
         self.discard_pile.append(card)
@@ -130,10 +137,10 @@ class BoardCallback(object):
         assert(self.hand_card is None)
         assert(not self.turn_over)
         if from_draw_pile:
-            self.hand_card = self._board.pile.draw()
+            self.hand_card, reshuffle = self._board.pile.draw()
             self.drawn_from_deck = True
         else:
-            self.hand_card = self._board.pile.discard_draw()
+            self.hand_card, reshuffle = self._board.pile.discard_draw()
 
         return self.hand_card
 
@@ -159,6 +166,54 @@ class BoardCallback(object):
         self.hand_card = None
         self.turn_over = True
 
+    def peek_at(self, index):
+        assert(self.hand_card is not None)
+        assert(self.hand_card == 8 or self.hand_card == 7)
+        assert(self.drawn_from_deck)
+        assert(not self.turn_over)
+        peek_card = self._board.hands[self.active_player][index]
+        assert(peek_card is not None)
+        peek_info = message.CardInfo(False, self.active_player, index, peek_card)
+        self.information.append(peek_info)
+        self._board.pile.discard(self.hand_card)
+        self.hand_card = None
+        self.turn_over = True
+
+    def spy_at(self, spied_player, index):
+        assert(self.hand_card is not None)
+        assert(self.hand_card == 9 or self.hand_card == 10)
+        assert(self.drawn_from_deck)
+        assert(not self.turn_over)
+        spied_card = self._board.hands[spied_player][index]
+        assert(spied_card is not None)
+        assert(spied_player is not self.active_player)
+        spy_info = message.CardInfo(False, spied_player, index, spied_card)
+        self.information.append(spy_info)
+        self._board.pile.discard(self.hand_card)
+        self.hand_card = None
+        self.turn_over = True
+
+    def swap_with(self, swap_player, swap_index, own_index):
+        assert(self.hand_card is not None)
+        assert(self.hand_card == 11 or self.hand_card == 12)
+        assert(self.drawn_from_deck)
+        assert(not self.turn_over)
+        assert(self.active_player is not swap_player)
+        swap_card = self._board.hands[swap_player][swap_index]
+        assert(swap_card is not None)
+        own_card = self._board.hands[self.active_player][own_index]
+        assert(own_card is not None)
+
+        self._board.hands[self.active_player][own_index] = swap_card
+        self._board.hands[swap_player][swap_index] = own_card
+
+        swap_info = message.SwapInfo(swap_player, swap_index, self.active_player, own_index)
+        self.information.append(swap_info)
+
+        self._board.pile.discard(self.hand_card)
+        self.hand_card = None
+        self.turn_over = True
+
     def replace_at(self, index):
         assert(self.hand_card is not None)
         assert(not self.turn_over)
@@ -167,9 +222,12 @@ class BoardCallback(object):
         self._board.pile.discard(old_card)
         self._board.hands[self.active_player][index] = self.hand_card
 
+        # Possible knowledge is cleared.
+        self.information.append(message.ClearInfo(self.active_player, index))
+
         # If the card was drawn from the discard pile, then this is
         # public information.
-        replace_info = message.ReplaceInfo(
+        replace_info = message.CardInfo(
             not self.drawn_from_deck, self.active_player, index, self.hand_card)
         self.information.append(replace_info)
 

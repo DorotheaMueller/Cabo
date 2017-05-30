@@ -42,6 +42,7 @@ class Game(object):
 
         while self.active_player != self.board.called_cabo:
             self.run_turn()
+            print(self)
 
         self.score_game()
 
@@ -113,7 +114,14 @@ class Player(object):
             board.call_cabo()
         else:
             card = board.draw()
-            board.replace_at(2)
+            if card == 7 or card == 8:
+                board.peek_at(3)
+            elif (card == 9 or card == 10) and self.index != 0:
+                board.spy_at(0, 3)
+            elif (card == 11 or card == 12) and self.index != 2:
+                board.swap_with(2, 1, 3)
+            else:
+                board.replace_at(3)
 
     def update_knowledge(self, info):
         info.apply(self.knowledge, self.further_knowledge)
@@ -134,7 +142,7 @@ class Player(object):
 def main():
     game = Game()
     print(game)
-    game.run_game()
+    game.run_subgame()
     print(game)
 
 

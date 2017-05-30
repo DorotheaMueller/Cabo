@@ -5,6 +5,7 @@ from mock import patch
 import sys
 import main
 
+# To do: Check if knowledge of players is consistent with actual cards.
 
 def test_board_card_count():
     """Create a board and check if the amount of cards is what we expect."""
