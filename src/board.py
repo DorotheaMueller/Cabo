@@ -19,6 +19,11 @@ class Hand(object):
     def callback(self, max_peeks):
         return HandCallback(self, max_peeks)
 
+    def sum(self):
+        with_default = lambda x: x if x is not None else 0
+        return (with_default(self._card0) + with_default(self._card1) +
+                with_default(self._card2) + with_default(self._card3))
+
     def __str__(self):
         return f"Hand({self._card0}, {self._card1}, {self._card2}, {self._card3})"
 
@@ -235,3 +240,43 @@ class BoardCallback(object):
         self.turn_over = True
 
         return old_card
+
+    def replace_many(self, indices, card_value):
+        assert(self.hand_card is not None)
+        assert(not self.turn_over)
+        assert(len(indices) >= 2)
+        assert(isinstance(card_value, int))
+
+        index_counter = {}
+
+        correct_value_named = True
+        for i in indices:
+            index_counter[i] = index_counter.setdefault(i, 0) + 1
+            card = self._board.hands[self.active_player][i]
+            assert(card is not None)
+            correct_value_named = correct_value_named and card == card_value
+
+        for k, v in index_counter.items():
+            # check if each index was only used once.
+            assert(v == 1)
+
+        if correct_value_named:
+            for i in indices:
+                self._board.pile.discard(self._board.hands[self.active_player][i])
+                # There are no cards.
+                self._board.hands[self.active_player][i] = None
+                self.information.append(message.CardInfo(True, self.active_player, i, None))
+            self._board.hands[self.active_player][indices[0]] = self.hand_card
+            # One replace card, but it depends on the publicity of the draw whether it is known.
+            self.information.append(message.ClearInfo(self.active_player, indices[0]))
+            self.information.append(message.CardInfo(not self.drawn_from_deck, self.active_player, indices[0], self.hand_card))
+
+            self.hand_card = None
+            self.turn_over = True
+        else:
+            # Broadcast all information and discard
+            self._board.pile.discard(self.hand_card)
+            for i in indices:
+                self.information.append(message.CardInfo(True, self.active_player, i, self._board.hands[self.active_player][i]))
+            self.hand_card = None
+            self.turn_over = True

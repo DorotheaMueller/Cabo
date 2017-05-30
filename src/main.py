@@ -47,7 +47,7 @@ class Game(object):
         self.score_game()
 
     def score_game(self):
-        scores = [sum(hand) for hand in self.board.hands]
+        scores = [hand.sum() for hand in self.board.hands]
         min_score = min(scores)
         if scores[self.board.called_cabo] == min_score:
             scores[self.board.called_cabo] = 0
@@ -93,6 +93,17 @@ class Unknown(object):
 unknown = Unknown()
 
 
+def identify_multiple_cards(cards):
+    """Takes a list of knowledge [3, 5, ?, 5] and returns a list
+    of multiples: {5 : [1,3]}. Here '5 : [1,3]' means that a five known
+    both at position 1 and 3."""
+    index_by_value = {}
+    for i in range(4):
+        if isinstance(cards[i], int):
+            index_by_value.setdefault(cards[i], []).append(i)
+
+    return {k: v for k, v in index_by_value.items() if len(v) >= 2}
+
 class Player(object):
     def __init__(self, name, index, player_count):
         self.name = name
@@ -110,8 +121,19 @@ class Player(object):
     def turn(self, board):
         # Wow, so much AI, so much clever.
 
+        multiples = identify_multiple_cards(self.knowledge[self.index])
+        for card_value, indices in multiples.items():
+            # This loop is run at most once, as we return from turn().
+            card = board.draw()
+            board.replace_many(indices, card_value)
+            return
+
         if random.random() < 0.15 and board.cabo_allowed():
             board.call_cabo()
+
+        #FIXME: As the parameters are fixed, but multiple cards can be discarded,
+        # it is possible that an assertion error will be thrown.
+
         else:
             card = board.draw()
             if card == 7 or card == 8:
@@ -127,7 +149,7 @@ class Player(object):
         info.apply(self.knowledge, self.further_knowledge)
 
     def __repr__(self):
-        return f"Player({self.name}, {self.index}, {self.knowledge})"
+        return f"Player({self.name}, {self.index}, {self.knowledge}; multiples: {identify_multiple_cards(self.knowledge[self.index])})"
 
     def __todo(self):
         pass
