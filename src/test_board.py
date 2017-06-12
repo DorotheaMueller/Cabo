@@ -2,6 +2,7 @@
 
 from board import Board
 from mock import patch
+from helper import unknown
 import sys
 import main
 
@@ -54,7 +55,7 @@ def verify_knowledge_consistency(game):
             for card_index in range(4):
                 believe = player.knowledge[player_index][card_index]
                 truth = game.board.hands[player_index][card_index]
-                if believe != main.unknown:
+                if believe != unknown:
                     assert(believe == truth)
                 elif truth is None:
                     assert(believe is None)

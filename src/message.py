@@ -1,4 +1,4 @@
-from main import unknown
+from helper import unknown
 
 class CardInfo(object):
     def __init__(self, public, player_index, card_index, card):
