@@ -131,19 +131,23 @@ class Player(object):
         if random.random() < 0.15 and board.cabo_allowed():
             board.call_cabo()
 
-        #FIXME: As the parameters are fixed, but multiple cards can be discarded,
-        # it is possible that an assertion error will be thrown.
-
         else:
             card = board.draw()
             if card == 7 or card == 8:
-                board.peek_at(3)
+                card_index = random_card_index(self.knowledge, self.index)
+                board.peek_at(card_index)
             elif (card == 9 or card == 10) and self.index != 0:
-                board.spy_at(0, 3)
+                other_index = random_other_player_index(self.knowledge, self.index)
+                card_index = random_card_index(self.knowledge, other_index)
+                board.spy_at(other_index, card_index)
             elif (card == 11 or card == 12) and self.index != 2:
-                board.swap_with(2, 1, 3)
+                card_index = random_card_index(self.knowledge, self.index)
+                other_index = random_other_player_index(self.knowledge, self.index)
+                other_card_index = random_card_index(self.knowledge, other_index)
+                board.swap_with(other_index, other_card_index, card_index)
             else:
-                board.replace_at(3)
+                card_index = random_card_index(self.knowledge, self.index)
+                board.replace_at(card_index)
 
     def update_knowledge(self, info):
         info.apply(self.knowledge, self.further_knowledge)
@@ -159,6 +163,22 @@ class Player(object):
         #   - Track the discard pile over a reshuffle (maybe elsewhere).
         #   - Get (guarded) access to other players knowledge. (via BoardCallback)
         #   -
+
+
+def random_other_player_index(knowledge, player_index):
+    other_player_index = random.randrange(len(knowledge)-1)
+    if other_player_index >= player_index:
+        return player_index + 1
+    else:
+        return other_player_index
+
+
+def random_card_index(knowledge, player_index):
+    while True:
+        card_index = random.randrange(4)
+        card = knowledge[player_index][card_index]
+        if card is not None:
+            return card_index
 
 
 def main():

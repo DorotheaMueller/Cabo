@@ -56,3 +56,5 @@ def verify_knowledge_consistency(game):
                 truth = game.board.hands[player_index][card_index]
                 if believe != main.unknown:
                     assert(believe == truth)
+                elif truth is None:
+                    assert(believe is None)
