@@ -97,3 +97,79 @@ class RandomPlayer(Player):
             else:
                 card_index = random_card_index(self.knowledge, self.index)
                 board.replace_at(card_index)
+
+
+class HeuristicPlayer(Player):
+    def turn(self, board):
+        if self.should_cabo():
+            board.call_cabo()
+            return
+
+        draw_discarded_card = false
+        # TODO: Add conditions, when we take the discarded card
+
+        if draw_discarded_card:
+            # Passing False draws from the discard pile
+            card = board.draw(False)
+            raise("Unimplemented")
+
+        card = board.draw()
+
+        if self.has_card(card):
+            raise("Unimplemented")
+
+        if card == 7 or card == 8:
+            self.peek(board, card)
+        elif (card == 9 or card == 10) and self.index != 0:
+            self.spy(board, card)
+        elif (card == 11 or card == 12) and self.index != 2:
+            self.swap(board, card)
+        else:
+            self.plain_card(board, card)
+
+    def peek(self, board, card):
+        # Look at the first unknown card or discard the peek card.
+        own_knowlede = self.knowledge[self.index]
+        for i in range(4):
+            if own_knowlede[i] is unknown:
+                board.peek_at(i)
+                return
+        self.plain_card(board, card)
+
+    def spy(self, board, card):
+        # TODO
+        other_index = random_other_player_index(self.knowledge, self.index)
+        card_index = random_card_index(self.knowledge, other_index)
+        board.spy_at(other_index, card_index)
+
+    def swap(self, board, card):
+        # TODO
+        card_index = random_card_index(self.knowledge, self.index)
+        other_index = random_other_player_index(self.knowledge, self.index)
+        other_card_index = random_card_index(self.knowledge, other_index)
+        board.swap_with(other_index, other_card_index, card_index)
+
+    def plain_card(self, board, card):
+        # TODO
+        card_index = random_card_index(self.knowledge, self.index)
+        board.replace_at(card_index)
+
+    def has_card(self, card):
+        # Do we know that we already have the card?
+        for i in range(4):
+            believe = self.knowledge[self.index][i]
+            if believe == card:
+                return True
+        return False
+
+    def should_cabo(self):
+        """The Heuristic Player calls cabo if it knows all cards and has
+        at most 10 points."""
+        accumulator = 0
+        for card in self.knowledge[self.index]:
+            if isinstance(card, int):
+                accumulator += card
+            elif card is unknown:
+                return False
+
+        return accumulator <= 10
