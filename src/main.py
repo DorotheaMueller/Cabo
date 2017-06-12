@@ -3,7 +3,7 @@
 import board
 import sys
 import random
-from player import Player
+from player import RandomPlayer
 
 class Game(object):
     def __init__(self):
@@ -14,7 +14,7 @@ class Game(object):
         for i in range(1, len(sys.argv)):
             self.player_names.append(sys.argv[i])
 
-        self.players = [Player(self.player_names[i], i, self.player_count)
+        self.players = [RandomPlayer(self.player_names[i], i, self.player_count)
                         for i in range(self.player_count)]
         self.total_scores = [0] * self.player_count
 
