@@ -10,6 +10,8 @@ class Game(object):
         # Read player names from command line arguments
         self.player_count = len(sys.argv) - 1
         assert(2 <= self.player_count <= 5)
+        # TODO: assert that all player names are unique.
+        # TODO: Build a player dictionary and pass it to interactive players.
         self.player_names = []
         for i in range(1, len(sys.argv)):
             self.player_names.append(sys.argv[i])
