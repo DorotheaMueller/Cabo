@@ -7,7 +7,7 @@ from player import RandomPlayer
 from commandLine import InteractivePlayer
 
 class Game(object):
-    def __init__(self):
+    def __init__(self, debug=False):
         # # Read player names from command line arguments
         # self.player_count = len(sys.argv) - 1
         # assert(2 <= self.player_count <= 5)
@@ -17,6 +17,7 @@ class Game(object):
         # for i in range(1, len(sys.argv)):
         #     self.player_names.append(sys.argv[i])
 
+        self.debug = debug
         self.player_count = 3
         self.player_names = ["Sara", "Rolf", "Doro"]
         self.player_indices = {"Sara":0, "Rolf":1, "Doro":2}
@@ -48,7 +49,8 @@ class Game(object):
 
         while self.active_player != self.board.called_cabo:
             self.run_turn()
-            print(self)
+            if self.debug:
+                print(self)
 
         self.score_game()
 
@@ -92,8 +94,8 @@ class Game(object):
 
 def main():
     game = Game()
-    print(game)
     game.run_subgame()
+    print("Final state:")
     print(game)
 
 

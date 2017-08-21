@@ -9,6 +9,8 @@ class InteractivePlayer(Player):
 
     def turn(self, board):
         print(f"It is your turn now {self.name}.")
+        print(f"Your knowledge {self.knowledge}.")
+        print(f"The top discarded card is {board.discard_pile_top()}.")
         print("Draw from the 'De(ck)', 'Di(scard)' or call 'C(abo)'.")
 
         action = get_player_initial_action(board.cabo_allowed())
@@ -49,6 +51,10 @@ class InteractivePlayer(Player):
         else:
             print("This card has no special powers.")
             get_player_card_use(board, self.knowledge, self.index, self.player_indices)
+
+    def update_knowledge(self, info):
+        Player.update_knowledge(self, info)
+        print(info.display())
 
 
 class InitialMoves(Enum):
