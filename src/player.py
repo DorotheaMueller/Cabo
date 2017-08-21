@@ -105,7 +105,7 @@ class HeuristicPlayer(Player):
             board.call_cabo()
             return
 
-        draw_discarded_card = false
+        draw_discarded_card = False
         # TODO: Add conditions, when we take the discarded card
 
         if draw_discarded_card:
@@ -115,15 +115,18 @@ class HeuristicPlayer(Player):
 
         card = board.draw()
 
-        if self.has_card(card):
+        if self.has_card(card) and False:
             raise("Unimplemented")
 
         if card == 7 or card == 8:
             self.peek(board, card)
-        elif (card == 9 or card == 10) and self.index != 0:
+        elif card == 9 or card == 10:
             self.spy(board, card)
-        elif (card == 11 or card == 12) and self.index != 2:
+        elif card == 11 or card == 12:
             self.swap(board, card)
+        elif card == 13:
+            board.discard()
+            return
         else:
             self.plain_card(board, card)
 
@@ -150,9 +153,14 @@ class HeuristicPlayer(Player):
         board.swap_with(other_index, other_card_index, card_index)
 
     def plain_card(self, board, card):
-        # TODO
-        card_index = random_card_index(self.knowledge, self.index)
-        board.replace_at(card_index)
+        card_index = self.worst_index(card)
+        replacement_candidate_value = self.knowledge[self.index][card_index]
+        if replacement_candidate_value is unknown:
+            board.replace_at(card_index)
+        elif card < replacement_candidate_value:
+            board.replace_at(card_index)
+        else:
+            board.discard()
 
     def has_card(self, card):
         # Do we know that we already have the card?
@@ -162,9 +170,31 @@ class HeuristicPlayer(Player):
                 return True
         return False
 
+    def worst_index(self, known_good_value=None):
+        # Is there a card we don't know?
+        for i in range(4):
+            believe = self.knowledge[self.index][i]
+            if believe == unknown:
+                return i
+
+        # Which card has the highest face value?
+        max_face_value = -1
+        highest_card_index = None
+        for i in range(4):
+            believe = self.knowledge[self.index][i]
+            if believe is None:
+                continue
+            elif believe > max_face_value and believe != known_good_value:
+                max_face_value = believe
+                highest_card_index = i
+
+        # highest_card_index can still be None, if all cards have the
+        # known_good_value. In this case we just return None to indicate this.
+        return highest_card_index
+
     def should_cabo(self):
-        """The Heuristic Player calls cabo if it knows all cards and has
-        at most 10 points."""
+        """The Heuristic Player calls cabo if it knows all its cards and
+        has at most 10 points."""
         accumulator = 0
         for card in self.knowledge[self.index]:
             if isinstance(card, int):

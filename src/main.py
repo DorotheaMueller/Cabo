@@ -3,7 +3,7 @@
 import board
 import sys
 import random
-from player import RandomPlayer
+from player import RandomPlayer, HeuristicPlayer
 from commandLine import InteractivePlayer
 
 class Game(object):
@@ -21,7 +21,8 @@ class Game(object):
         self.player_count = 3
         self.player_names = ["Sara", "Rolf", "Doro"]
         self.player_indices = {"Sara":0, "Rolf":1, "Doro":2}
-        self.players = [RandomPlayer("Sara", 0, 3), RandomPlayer("Rolf", 1, 3),
+        self.players = [HeuristicPlayer("Sara", 0, 3),
+            HeuristicPlayer("Rolf", 1, 3),
             InteractivePlayer("Doro", 2, 3, self.player_indices)]
 
         # self.players = [RandomPlayer(self.player_names[i], i, self.player_count)
