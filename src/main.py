@@ -4,20 +4,27 @@ import board
 import sys
 import random
 from player import RandomPlayer
+from commandLine import InteractivePlayer
 
 class Game(object):
     def __init__(self):
-        # Read player names from command line arguments
-        self.player_count = len(sys.argv) - 1
-        assert(2 <= self.player_count <= 5)
-        # TODO: assert that all player names are unique.
-        # TODO: Build a player dictionary and pass it to interactive players.
-        self.player_names = []
-        for i in range(1, len(sys.argv)):
-            self.player_names.append(sys.argv[i])
+        # # Read player names from command line arguments
+        # self.player_count = len(sys.argv) - 1
+        # assert(2 <= self.player_count <= 5)
+        # # TODO: assert that all player names are unique.
+        # # TODO: Build a player dictionary and pass it to interactive players.
+        # self.player_names = []
+        # for i in range(1, len(sys.argv)):
+        #     self.player_names.append(sys.argv[i])
 
-        self.players = [RandomPlayer(self.player_names[i], i, self.player_count)
-                        for i in range(self.player_count)]
+        self.player_count = 3
+        self.player_names = ["Sara", "Rolf", "Doro"]
+        self.player_indices = {"Sara":0, "Rolf":1, "Doro":2}
+        self.players = [RandomPlayer("Sara", 0, 3), RandomPlayer("Rolf", 1, 3),
+            InteractivePlayer("Doro", 2, 3, self.player_indices)]
+
+        # self.players = [RandomPlayer(self.player_names[i], i, self.player_count)
+        #                 for i in range(self.player_count)]
         self.total_scores = [0] * self.player_count
 
         self.setup_subgame()

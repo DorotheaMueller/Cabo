@@ -145,7 +145,7 @@ class BoardCallback(object):
             self.hand_card, reshuffle = self._board.pile.draw()
             self.drawn_from_deck = True
         else:
-            self.hand_card, reshuffle = self._board.pile.discard_draw()
+            self.hand_card = self._board.pile.discard_draw()
 
         return self.hand_card
 
