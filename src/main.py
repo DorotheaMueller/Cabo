@@ -5,31 +5,53 @@ import sys
 import random
 from player import RandomPlayer, HeuristicPlayer
 from commandLine import InteractivePlayer
+import argparse
+from helper import match
 
 class Game(object):
     def __init__(self, debug=False):
-        # # Read player names from command line arguments
-        # self.player_count = len(sys.argv) - 1
-        # assert(2 <= self.player_count <= 5)
-        # # TODO: assert that all player names are unique.
-        # # TODO: Build a player dictionary and pass it to interactive players.
-        # self.player_names = []
-        # for i in range(1, len(sys.argv)):
-        #     self.player_names.append(sys.argv[i])
+        parser = argparse.ArgumentParser(description = 'Argument parser to start the game Cabo.')
+        parser.add_argument('-d', '--debug', action='store_true', help = 'If you would like the whole game output for debugging.')
 
-        self.debug = debug
-        self.player_count = 3
-        self.player_names = ["Sara", "Rolf", "Doro"]
-        self.player_indices = {"Sara":0, "Rolf":1, "Doro":2}
-        self.players = [HeuristicPlayer("Sara", 0, 3),
-            HeuristicPlayer("Rolf", 1, 3),
-            InteractivePlayer("Doro", 2, 3, self.player_indices)]
+        parser.add_argument('-p', '--player', action = 'append', nargs = '+', metavar = ('player_type', 'name'))
+        args = parser.parse_args()
+        # args = parser.parse_args(['-d', '-p', 'h', 'Sara', '-p', 'h', 'Rolf', '-p', 'r'])
 
-        # self.players = [RandomPlayer(self.player_names[i], i, self.player_count)
-        #                 for i in range(self.player_count)]
+        player_types = set(['r', 'h', 'i', 'random', 'human', 'intelligent'])
+        default_names = ['Primus', 'Secundus', 'Tertius', 'Quartus', 'Quintus']
+        name_set = set()
+        # Only 2 to 5 players.
+        assert(2 <= len(args.player) <= 5)
+        for i,l in enumerate(args.player):
+            print(l[0].lower())
+            assert(l[0].lower() in player_types)
+            assert(len(l) <= 2)
+            if len(l) == 1:
+                l.append('Player ' + default_names[i])
+            name_set.add(args.player[i][1].lower())
+        # Only unique names.
+        assert(len(name_set) == len(args.player))
+
+        # Create game.
+        self.debug = args.debug
+        self.player_count = len(args.player)
+        self.player_names = [l[1] for l in args.player]
+        self.player_indices = {l[1]:i for i,l in enumerate(args.player)}
+        self.players = []
+        for l in args.player:
+            self.create_player(*l)
+
         self.total_scores = [0] * self.player_count
-
         self.setup_subgame()
+
+    def create_player(self, player_type, player_name):
+        player_type = player_type.lower()
+        if match(player_type, 'random'):
+            self.players.append(RandomPlayer(player_name, self.player_indices[player_name], self.player_count))
+        elif match(player_type, 'intelligent'):
+            self.players.append(HeuristicPlayer(player_name, self.player_indices[player_name], self.player_count))
+        elif match(player_type, 'human'):
+            self.players.append(InteractivePlayer(player_name, self.player_indices[player_name], self.player_count, self.player_indices))
 
     def run_game(self):
         self.run_subgame()
