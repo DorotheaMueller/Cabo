@@ -22,7 +22,7 @@ def test_full_example_run():
     """Run a full example game with AIs
     Throwing no exceptions passes the test."""
 
-    testargs = [sys.argv[0], "Doro", "Rolf", "Judita"]
+    testargs = [sys.argv[0], "-d", "-p", "r", "-p", "i", "Judita"]
     with patch.object(sys, 'argv', testargs):
         full_example_run()
 
@@ -36,7 +36,7 @@ def test_knowledge_consistency():
     """Run a full example game with AIs
     Throwing no exceptions passes the test."""
 
-    testargs = [sys.argv[0], "Doro", "Rolf", "Judita", "Sara"]
+    testargs = [sys.argv[0], "-d", "-p", "r", "-p", "i", "Judita"]
     with patch.object(sys, 'argv', testargs):
         knowledge_testing_run()
 
