@@ -1,6 +1,6 @@
 from player import Player
 from enum import Enum
-
+from helper import match
 
 class InteractivePlayer(Player):
     def __init__(self, name, index, player_count, player_indices):
@@ -82,12 +82,6 @@ def get_player_initial_action(cabo_allowed):
     else:
         print("Please type 'c', 'de' or 'di' for one of the allowed actions.")
         return get_player_initial_action(cabo_allowed)
-
-
-def match(user_string, string_constant, min_length=1):
-    if len(user_string.strip()) < min_length:
-        return False
-    return string_constant.lower().startswith(user_string.strip().lower())
 
 
 def get_player_card_use(board, knowledge, player_index, player_indices,
