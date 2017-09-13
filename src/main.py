@@ -10,10 +10,13 @@ from helper import match
 
 class Game(object):
     def __init__(self, debug=False):
-        parser = argparse.ArgumentParser(description = 'Argument parser to start the game Cabo.')
+        parser = argparse.ArgumentParser(description = 'To start the game Cabo, please provide between 2-5 players (see p).')
         parser.add_argument('-d', '--debug', action='store_true', help = 'If you would like the whole game output for debugging.')
 
-        parser.add_argument('-p', '--player', action = 'append', nargs = '+', metavar = ('player_type', 'name'))
+        parser.add_argument('-p', '--player', action = 'append', nargs = '+', metavar = ('player_type', 'name'), help ='Available player \n\
+         types are h (for human), i (for intelligent player), r (for random player). \n\
+         You can name the players. Note however, that the \n\
+         names have to be unique.')
         args = parser.parse_args()
         # args = parser.parse_args(['-d', '-p', 'h', 'Sara', '-p', 'h', 'Rolf', '-p', 'r'])
 
@@ -21,16 +24,23 @@ class Game(object):
         default_names = ['Primus', 'Secundus', 'Tertius', 'Quartus', 'Quintus']
         name_set = set()
         # Only 2 to 5 players.
-        assert(2 <= len(args.player) <= 5)
+        if (args.player is None) or not (2 <= len(args.player) <= 5):
+            parser.error('Please enter between 2 and 5 players!')
+        # assert(2 <= len(args.player) <= 5)
         for i,l in enumerate(args.player):
-            print(l[0].lower())
-            assert(l[0].lower() in player_types)
+            if not(l[0].lower() in player_types):
+                # TODO: Displayed message OK?
+                parser.error(f"Please chose a player type from: {player_types}")
             assert(len(l) <= 2)
             if len(l) == 1:
                 l.append('Player ' + default_names[i])
             name_set.add(args.player[i][1].lower())
         # Only unique names.
-        assert(len(name_set) == len(args.player))
+        if not (len(name_set) == len(args.player)):
+            used_names = [l[1] if l[1] is not None else default_names[i] for i,l in enumerate(args.player)]
+            parser.error(f'Please use only unique names! (Please note that \n\
+            if no name is specified, default names are used.) \n\
+            The names {used_names} contained a duplicate.')
 
         # Create game.
         self.debug = args.debug
